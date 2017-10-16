@@ -1,0 +1,21 @@
+#  -*-  coding:utf-8  -*-
+#+TITLE: ZeroMQ
+
+
+* 指南--针对ZeroMQ3.2版本
+
+** 一百字的介绍
+
+看上去像一个可嵌入的网络库，但行为类似于一个并发框架。它提供的套接字可
+将原子性消息在各种方式上传输，比如进程内，进程间，TCP和组播。可以实现
+N-TO-N的套接字链接，可实现几种模式：fan-out，pub-sub，task
+distribution，request-reply。它的异步IO模型，帮助实现可伸缩的多核应用，
+构建异步的消息处理任务。ZeroMQ使用LGPLv3版权。
+
+** Zero之禅
+
+Zero意味着“Zero broker”和接近于“zero latency”。
+e
+通过降低复杂度来增强它，而不是增加新功能。
+
+* 第一章 基础
