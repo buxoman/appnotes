@@ -128,7 +128,7 @@ int main(int artc, char* argv[])
 
   printf("Number of funny ranges: %d\n", result);
   
-  for (i = 0; i < sizeof(sets) / sizeof(Set*); ++i) {
+  for (i = 0; i < nsets; ++i) {
     destroy(sets[i]);
   }
   free(sets);
