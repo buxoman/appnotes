@@ -76,7 +76,7 @@ void destroy(Set* s)
     free(s);
 }
 
-int main(int artc, char* argv[])
+int main(int argc, char* argv[])
 {
   int i = 0;
   Set** sets = NULL;
