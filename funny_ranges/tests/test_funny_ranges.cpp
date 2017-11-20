@@ -1,12 +1,6 @@
 #include <CppUTest/CommandLineTestRunner.h>
 #include <CppUTest/TestHarness.h>
 
-extern "C"
-{
-  /* #include "sample.h" */
-}
-
-
 /* 定义个 TEST_GROUP, 名称为 sample */
 TEST_GROUP(funny_ranges)
 {

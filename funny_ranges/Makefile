@@ -14,6 +14,11 @@ PROJECT_HOME_DIR = .
 CPPUTEST_HOME = /home/buhongbo/CppUTest
 CPP_PLATFORM = Gcc
 
+CPPUTEST_ENABLE_DEBUG = Y
+CPPUTEST_USE_EXTENSIONS = Y
+CPPUTEST_USE_GCOV = Y
+CPPUTEST_USE_MEM_LEAK_DETECTION = Y
+
 #CFLAGS are set to override malloc and free to get memory leak detection in C programs
 CFLAGS = -Dmalloc=cpputest_malloc -Dfree=cpputest_free
 CPPFLAGS =
@@ -40,7 +45,8 @@ INCLUDES =\
   -I$(CPPUTEST_HOME)/include\
 
 #Flags to pass to ld
-LDFLAGS += -lstdc++
+LDFLAGS += 
 USER_LIBS =
 
-include $(CPPUTEST_HOME)/build/ComponentMakefile
+include $(CPPUTEST_HOME)/build/MakefileWorker.mk
+
