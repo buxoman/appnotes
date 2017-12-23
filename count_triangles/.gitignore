@@ -1,0 +1,8 @@
+*~
+*.o
+*.so
+*.a
+lib/
+objs/
+count_triangles_tests
+count_triangles_tests.txt
