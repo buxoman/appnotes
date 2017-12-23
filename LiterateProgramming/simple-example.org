@@ -1,0 +1,121 @@
+* Literate Programming
+
+    Let us change our traditional attitude to the construction of
+    programs: Instead of imagining that our main task is to instruct a
+    computer what to do, let us concentrate rather on explaining to
+    human beings what we want a computer to do.
+
+    The practitioner of literate programming can be regarded as an
+    essayist, whose main concern is with exposition and excellence of
+    style. Such an author, with thesaurus in hand, chooses the names
+    of variables carefully and explains what each variable means. He
+    or she strives for a program that is comprehensible because its
+    concepts have been introduced in an order that is best for human
+    understanding, using a mixture of formal and informal methods that
+    reinforce each other.
+
+    – Donald Knuth
+
+Babel supports Literate Programming (LP) by allowing the act of
+programming to take place inside of Org-mode documents. The Org-mode
+file can then be exported (woven in LP speak) to HTML or LaTeX for
+consumption by a human, and the embedded source code can be extracted
+(tangled in LP speak) into structured source code files for
+consumption by a computer.
+
+To support these operations Babel relies on Org-mode's existing
+exporting functionality for weaving of documentation, and on the
+org-babel-tangle function which makes use of Noweb reference syntax
+for tangling of code files.
+
+The following example demonstrates the process of tangling in Babel.
+
+** Simple Literate Programming Example (Noweb syntax)
+
+Tangling functionality is controlled by the tangle family of tangle
+header arguments. These arguments can be used to turn tangling on or
+off (the default), either for the code block or the Org-mode heading
+level.
+
+The following code blocks demonstrate how to tangle them into a single
+source code file using org-babel-tangle.
+
+The following two code blocks have no tangle header arguments and so
+will not, by themselves, create source code files. They are included
+in the source code file by the third code block, which does have a
+tangle header argument.
+
+In the Org-mode file:
+
+#+name: hello-world-prefix
+#+begin_src sh :exports none
+  echo "/-----------------------------------------------------------\\"
+#+end_src
+
+HTML export of code:
+
+:   echo "/-----------------------------------------------------------\\"
+
+In the Org-mode file
+
+#+name: hello-world-postfix
+#+begin_src sh :exports none
+  echo "\-----------------------------------------------------------/"
+#+end_src
+
+HTML export of code:
+
+:   echo "\-----------------------------------------------------------/"
+
+The third code block does have a tangle header argument indicating the
+name of the file to which the tangled source code will be written. It
+also has Noweb style references to the two previous code blocks. These
+references will be expanded during tangling to include them in the
+output file as well.
+
+In the Org-mode file:
+
+#+name: hello-world
+#+begin_src sh :tangle hello :exports none :noweb yes
+  <<hello-world-prefix>>
+  echo "|                       hello world                         |"
+  <<hello-world-postfix>>
+#+end_src
+
+HTML export of code:
+
+:   <<hello-world-prefix>>
+:   echo "|                       hello world                         |"
+:   <<hello-world-postfix>>
+
+Calling org-babel-tangle will result in the following shell source
+code being written to the hello.sh file:
+
+#+BEGIN_EXAMPLE
+
+  #!/usr/bin/env sh
+
+  # [[file:~/org/temp/index.org::*Noweb%20test][hello-world]]
+
+  echo "/-----------------------------------------------------------\\"
+  echo "|                       hello world                         |"
+  echo "\-----------------------------------------------------------/"
+  # hello-world ends here
+
+#+END_EXAMPLE
+
+In addition, the following syntax can be used to insert the results of
+evaluating a code block, in this case one named example-block.
+
+:   # <<example-block()>>
+
+Any optional arguments can be passed to example-block() by placing the
+arguments inside the parentheses following the convention defined when
+calling source block functions (see the Library of babel). For
+example,
+
+:   # <<example-block(a=9)>>
+
+sets the value of argument \"a\" equal to \"9\". Note that these
+arguments are not evaluated in the current source-code block but are
+passed literally to example-block().

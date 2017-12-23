@@ -1,0 +1,7 @@
+*~
+*.o
+*.so
+*.a
+lib/
+objs/
+funny_ranges_tests

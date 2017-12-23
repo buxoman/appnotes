@@ -1,0 +1,12 @@
+#+BEGIN_SRC emacs-lisp
+(directory-files ".")
+
+#+END_SRC
+
+
+#+BEGIN_SRC sh :results verbatim :exports both
+  ssh -v goblin.howardabrams.com ls mossandcrow
+#+END_SRC
+
+#+RESULTS:
+

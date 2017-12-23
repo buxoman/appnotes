@@ -1,0 +1,73 @@
+* Emacs Initialization with Babel
+
+[[file:./images/dot-emacs.png]]
+
+Babel has special support for embedding your Emacs initialization into
+Org-mode files. The org-babel-load-file function can be used to load
+the Emacs Lisp code blocks embedded in a literate Org-mode file in the
+same way that you might load a regular Emacs Lisp file, such as
+.emacs.
+
+This allows you to make use of the nice features of Org-mode, such as
+folding, tags, notes, HTML export, etc., to organize and maintain your
+Emacs initialization.
+
+To try this out, either see the simple Literate Emacs Initialization
+example, or check out the Babel Literate Programming version of Phil
+Hagelberg's excellent emacs-starter-kit available at
+Org-babel-emacs-starter-kit.
+
++ Literate Emacs Initialization
+
+  For a simple example of usage, follow these 5 steps:
+
+  1. create a directory named .emacs.d in the base of your home directory;
+
+:        mkdir ~/.emacs.d
+
+  2. checkout the latest version of Org-mode into the src subdirectory
+     of this new directory;
+
+:        cd ~/.emacs.d
+:        mkdir src
+:        cd src
+:        git clone git://orgmode.org/org-mode.git
+
+  3. place the following code block in a file called init.el in your
+     Emacs initialization directory (~/.emacs.d).
+
+#+BEGIN_SRC elisp
+
+        ;;; init.el --- Where all the magic begins
+        ;;
+        ;; This file loads Org-mode and then loads the rest of our Emacs initialization from Emacs lisp
+        ;; embedded in literate Org-mode files.
+
+        ;; Load up Org Mode and (now included) Org Babel for elisp embedded in Org Mode files
+        (setq dotfiles-dir (file-name-directory (or (buffer-file-name) load-file-name)))
+
+        (let* ((org-dir (expand-file-name
+                         "lisp" (expand-file-name
+                                 "org" (expand-file-name
+                                        "src" dotfiles-dir))))
+               (org-contrib-dir (expand-file-name
+                                 "lisp" (expand-file-name
+                                         "contrib" (expand-file-name
+                                                    ".." org-dir))))
+               (load-path (append (list org-dir org-contrib-dir)
+                                  (or load-path nil))))
+          ;; load up Org-mode and Org-babel
+          (require 'org-install)
+          (require 'ob-tangle))
+
+        ;; load up all literate org-mode files in this directory
+        (mapc #'org-babel-load-file (directory-files dotfiles-dir t "\\.org$"))
+
+        ;;; init.el ends here
+
+#+END_SRC
+
+  4. implement all of your Emacs customizations inside of Emacs Lisp
+     code blocks embedded in Org-mode files in this directory; and
+
+  5. re-start Emacs to load the customizations.
