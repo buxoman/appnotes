@@ -171,4 +171,15 @@ TEST(Iterate3Points, call_N_times_until_p1_reach_ending_)
   CHECK_EQUAL(5, p3);
 }  
 
+TEST(Iterate3Points, call_N_times_until_p1_wakl_over_ending_)
+{
+  iterator_begin(&g);
+
+  for(int i = 0; i < 11; ++i) {
+    iterator_next(&g, &p1, &p2, &p3);
+  }
+
+  CHECK_EQUAL(1, iterator_end(&g));
+}  
+
 
