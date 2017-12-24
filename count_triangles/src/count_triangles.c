@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include "count_triangles.h"
 
 struct Graph graph;
 
-int point[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11};
+int point[11] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11};
 
-int line[][12] = {
+int line[7][12] = {
     /* line N     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11} */
     /* line 1  */ {0, 1, 2, 3, 0, 0, 0, 0, 0, 0,  0,  0},
     /* line 2  */ {0, 0, 0, 3, 4, 5, 6, 0, 0, 0,  0,  0},
@@ -18,25 +19,45 @@ int line[][12] = {
     /* line 7  */ {0, 0, 0, 3, 0, 0, 0, 7, 0, 0, 10, 11}
 };
 
-int num_pts = sizeof(point) / sizeof(int);
-
-
-/* keep pt1_idx < pt2_idx < pt3_idx */
-static int pt1_idx = 0;
-static int pt2_idx = 0;
-static int pt3_idx = 0;
-
-
-void graph_construct(struct Graph* g)
+void graph_construct(struct Graph* g,
+		     int num_pts, int* pts,
+		     int num_lns, int* lns)
 {
+  size_t sz;
   assert(g);
   
   g->num_pts = num_pts;
-  g->points  = point;
+  g->points = NULL;
+  sz = (size_t)num_pts *  sizeof(int);
+  g->points = (int*)malloc(sz);
+  if (g->points) {
+    memcpy(g->points, pts, sz);
+  }
+
+  g->num_lns = num_lns;
+  g->lines = NULL;
+  sz = sizeof(int) * (size_t)g->num_lns * (size_t)(g->num_pts + 1);
+  g->lines = (int*)malloc(sz);
+  if (g->lines) {
+    memcpy(g->lines, lns, sz);
+  }
 
   g->iter.pt1_idx = -1;
   g->iter.pt2_idx = -1;
   g->iter.pt3_idx = -1;
+}
+
+void graph_destroy(struct Graph* g)
+{
+  assert(g);
+
+  if (g->points)
+    free (g->points);
+
+  if (g->lines)
+    free (g->lines);
+
+  memset(g, 0, sizeof(*g));
 }
 
 void iterator_begin(struct Graph* g)
@@ -84,54 +105,20 @@ void iterator_next(struct Graph* g, int* p1, int* p2, int* p3)
   }
 }
 
-void iterate_init(void)
+int is_connected(struct Graph* g, int p1, int p2)
 {
-  pt1_idx = 0;
-  pt2_idx = 1;
-  pt3_idx = 2;
-}
+  assert(g);
 
-void iterate_end(void)
-{
-  pt1_idx = -1;
-  pt2_idx = -1;
-  pt3_idx = -1;
-}
+  int row = 0;
+  int* line_points = NULL;
 
-void iterate_points(int* p1, int* p2, int* p3)
-{
-  *p1 = point[pt1_idx];
-  *p2 = point[pt2_idx];
-  *p3 = point[pt3_idx];
-
-  pt3_idx += 1;
-  if (pt3_idx < num_pts) {
-    return;
+  for(row = 0; row < g->num_lns; ++row) {
+    line_points = g->lines + row * (g->num_pts + 1);
+    if ( line_points[p1] && line_points[p2] ) {
+      return 1;
+    }
   }
-
-  pt2_idx += 1;
-  if (pt2_idx < (num_pts - 1)) {
-    pt3_idx = pt2_idx + 1;
-    return;
-  }
-
-  pt1_idx += 1;
-  if (pt1_idx < (num_pts - 2)) {
-    pt2_idx = pt1_idx + 1;
-    pt3_idx = pt2_idx + 1;
-    return;
-  }
-
-  pt1_idx = -1;
-  pt2_idx = -1;
-  pt3_idx = -1;
+  
+  return 0;
 }
 
-/*
-int main(int argc, char* argv[])
-{
-    argc = argc;
-    argv = argv;
-    return 0;
-}
-*/

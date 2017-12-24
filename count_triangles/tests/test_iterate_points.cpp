@@ -31,7 +31,7 @@ TEST_GROUP(Iterate3Points)
     g.num_pts = 5;
     g.points = test_points;
     
-    iterate_init();
+    // iterate_init();
   }
 
   void teardown()
@@ -39,15 +39,15 @@ TEST_GROUP(Iterate3Points)
   }
 };
 
-TEST(Iterate3Points, call_once)
-{
+// TEST(Iterate3Points, call_once)
+// {
 
-  iterate_points(&p1, &p2, &p3);
+//   iterate_points(&p1, &p2, &p3);
 
-  CHECK_EQUAL(1, p1);
-  CHECK_EQUAL(2, p2);
-  CHECK_EQUAL(3, p3);
-}
+//   CHECK_EQUAL(1, p1);
+//   CHECK_EQUAL(2, p2);
+//   CHECK_EQUAL(3, p3);
+// }
 
 TEST(Iterate3Points, call_once_)
 {
@@ -61,15 +61,15 @@ TEST(Iterate3Points, call_once_)
 }
 
 
-TEST(Iterate3Points, call_twice)
-{
-  iterate_points(&p1, &p2, &p3);
-  iterate_points(&p1, &p2, &p3);
+// TEST(Iterate3Points, call_twice)
+// {
+//   iterate_points(&p1, &p2, &p3);
+//   iterate_points(&p1, &p2, &p3);
 
-  CHECK_EQUAL(1, p1);
-  CHECK_EQUAL(2, p2);
-  CHECK_EQUAL(4, p3);
-}
+//   CHECK_EQUAL(1, p1);
+//   CHECK_EQUAL(2, p2);
+//   CHECK_EQUAL(4, p3);
+// }
 
 TEST(Iterate3Points, call_twice_)
 {
@@ -82,17 +82,17 @@ TEST(Iterate3Points, call_twice_)
   CHECK_EQUAL(4, p3);
 }
 
-TEST(Iterate3Points, call_N_times_until_p3_reach_ending)
-{
-  int i;
-  for (i = 0; i < num_pts - 2; ++i) {
-    iterate_points(&p1, &p2, &p3);
-  }
+// TEST(Iterate3Points, call_N_times_until_p3_reach_ending)
+// {
+//   int i;
+//   for (i = 0; i < num_pts - 2; ++i) {
+//     iterate_points(&p1, &p2, &p3);
+//   }
 
-  CHECK_EQUAL(1, p1);
-  CHECK_EQUAL(2, p2);
-  CHECK_EQUAL(11, p3);
-}
+//   CHECK_EQUAL(1, p1);
+//   CHECK_EQUAL(2, p2);
+//   CHECK_EQUAL(11, p3);
+// }
 
 TEST(Iterate3Points, call_N_times_until_p3_reach_ending_)
 {
@@ -107,17 +107,17 @@ TEST(Iterate3Points, call_N_times_until_p3_reach_ending_)
   CHECK_EQUAL(5, p3);
 }
 
-TEST(Iterate3Points, call_N_times_until_p3_walk_over_ending)
-{
-  int i;
-  for (i = 0; i < num_pts - 1; ++i) {
-    iterate_points(&p1, &p2, &p3);
-  }
+// TEST(Iterate3Points, call_N_times_until_p3_walk_over_ending)
+// {
+//   int i;
+//   for (i = 0; i < num_pts - 1; ++i) {
+//     iterate_points(&p1, &p2, &p3);
+//   }
 
-  CHECK_EQUAL(1, p1);
-  CHECK_EQUAL(3, p2);
-  CHECK_EQUAL(4, p3);
-}
+//   CHECK_EQUAL(1, p1);
+//   CHECK_EQUAL(3, p2);
+//   CHECK_EQUAL(4, p3);
+// }
 
 TEST(Iterate3Points, call_N_times_until_p3_walk_over_ending_)
 {
@@ -180,6 +180,48 @@ TEST(Iterate3Points, call_N_times_until_p1_wakl_over_ending_)
   }
 
   CHECK_EQUAL(1, iterator_end(&g));
-}  
+}
 
+////////////////////////////////////////////////////////////
+//测试图形:
+//           /\        *
+//          /  \       *
+//         ------      *
+//         /    \      *
+//         ------      *
+// 5个交点从顶部逆时针依次为1,2,3,4,5
+// 不同的直线上共线的点集合:[1,2,3],[1,5,4],[2,5],[3,4]
+// my points: [1, 2, 3, 4, 5]
+int  test_points[5] = {1, 2, 3, 4, 5};
 
+int test_line[4][6] = {{0, 1, 2, 3, 0, 0},
+		  {0, 1, 0, 0, 4, 5},
+		  {0, 2, 0, 0, 0, 5},
+		  {0, 0, 0, 3, 4, 5}};
+
+struct Graph g;
+
+TEST_GROUP(ConnectedPoints)
+{
+  int p1, p2, p3;
+
+  void setup()
+  {
+    p1 = p2 = p3 = 0;
+    
+    graph_construct(&g,
+		    5, &test_points[0],
+		    4, &test_line[0][0]);
+		    
+  }
+
+  void teardown()
+  {
+    graph_destroy(&g);
+  }
+};
+
+TEST(ConnectedPoints, connected_points_1_2_)
+{
+  CHECK_EQUAL(1, is_connected(&g, 1, 2));
+}
