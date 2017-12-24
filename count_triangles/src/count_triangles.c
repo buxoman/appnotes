@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+#include "count_triangles.h"
+
+struct Graph graph;
 
 int point[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11};
 
@@ -16,10 +20,43 @@ int line[][12] = {
 
 int num_pts = sizeof(point) / sizeof(int);
 
+
 /* keep pt1_idx < pt2_idx < pt3_idx */
 static int pt1_idx = 0;
 static int pt2_idx = 0;
 static int pt3_idx = 0;
+
+
+void graph_construct(struct Graph* g)
+{
+  assert(g);
+  
+  g->num_pts = num_pts;
+  g->points  = point;
+
+  g->iterator.pt1_idx = -1;
+  g->iterator.pt2_idx = -1;
+  g->iterator.pt3_idx = -1;
+}
+
+void iterator_begin(struct Graph* g)
+{
+  assert(g);
+  
+  g->iterator.pt1_idx = 0;
+  g->iterator.pt2_idx = 1;
+  g->iterator.pt3_idx = 2;
+}
+
+/* 遍历完成则返回1否则返回0. */
+int iterator_end(struct Graph* g)
+{
+  assert(g);
+  
+  return (g->iterator.pt1_idx == -1)
+    &&   (g->iterator.pt2_idx == -1)
+    &&   (g->iterator.pt3_idx == -1);
+}
 
 void iterate_init(void)
 {
@@ -59,7 +96,9 @@ void iterate_points(int* p1, int* p2, int* p3)
     return;
   }
 
-  iterate_end();
+  pt1_idx = -1;
+  pt2_idx = -1;
+  pt3_idx = -1;
 }
 
 /*
