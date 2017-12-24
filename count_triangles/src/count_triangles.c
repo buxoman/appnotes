@@ -34,18 +34,18 @@ void graph_construct(struct Graph* g)
   g->num_pts = num_pts;
   g->points  = point;
 
-  g->iterator.pt1_idx = -1;
-  g->iterator.pt2_idx = -1;
-  g->iterator.pt3_idx = -1;
+  g->iter.pt1_idx = -1;
+  g->iter.pt2_idx = -1;
+  g->iter.pt3_idx = -1;
 }
 
 void iterator_begin(struct Graph* g)
 {
   assert(g);
   
-  g->iterator.pt1_idx = 0;
-  g->iterator.pt2_idx = 1;
-  g->iterator.pt3_idx = 2;
+  g->iter.pt1_idx = 0;
+  g->iter.pt2_idx = 1;
+  g->iter.pt3_idx = 2;
 }
 
 /* 遍历完成则返回1否则返回0. */
@@ -53,9 +53,35 @@ int iterator_end(struct Graph* g)
 {
   assert(g);
   
-  return (g->iterator.pt1_idx == -1)
-    &&   (g->iterator.pt2_idx == -1)
-    &&   (g->iterator.pt3_idx == -1);
+  return (g->iter.pt1_idx >= (g->num_pts - 2))
+    &&   (g->iter.pt2_idx >= (g->num_pts - 1))
+    &&   (g->iter.pt3_idx >= g->num_pts);
+}
+
+/* 取得三点的一个组合 */
+void iterator_next(struct Graph* g, int* p1, int* p2, int* p3)
+{
+  *p1 = g->points[g->iter.pt1_idx];
+  *p2 = g->points[g->iter.pt2_idx];
+  *p3 = g->points[g->iter.pt3_idx];
+
+  g->iter.pt3_idx += 1;
+  if (g->iter.pt3_idx < g->num_pts) {
+    return;
+  }
+
+  g->iter.pt2_idx += 1;
+  if (g->iter.pt2_idx < (g->num_pts - 1)) {
+    g->iter.pt3_idx = g->iter.pt2_idx + 1;
+    return;
+  }
+
+  g->iter.pt1_idx += 1;
+  if (g->iter.pt1_idx < (g->num_pts - 2)) {
+    g->iter.pt2_idx = g->iter.pt1_idx + 1;
+    g->iter.pt3_idx = g->iter.pt2_idx + 1;
+    return;
+  }
 }
 
 void iterate_init(void)

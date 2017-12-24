@@ -7,10 +7,11 @@ struct Graph
   int* points;
 
   struct _iterator {
+    /* always keep pt1_idx < pt2_idx < pt3_idx */
     int pt1_idx;
     int pt2_idx;
     int pt3_idx;
-  } iterator;
+  } iter;
   
 };
 
