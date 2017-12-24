@@ -94,11 +94,37 @@ TEST(Iterate3Points, call_N_times_until_p3_reach_ending)
   CHECK_EQUAL(11, p3);
 }
 
+TEST(Iterate3Points, call_N_times_until_p3_reach_ending_)
+{
+  iterator_begin(&g);
+  
+  for (int i = 0; i < g.num_pts - 2; ++i) {
+    iterator_next(&g, &p1, &p2, &p3);
+  }
+
+  CHECK_EQUAL(1, p1);
+  CHECK_EQUAL(2, p2);
+  CHECK_EQUAL(5, p3);
+}
+
 TEST(Iterate3Points, call_N_times_until_p3_walk_over_ending)
 {
   int i;
   for (i = 0; i < num_pts - 1; ++i) {
     iterate_points(&p1, &p2, &p3);
+  }
+
+  CHECK_EQUAL(1, p1);
+  CHECK_EQUAL(3, p2);
+  CHECK_EQUAL(4, p3);
+}
+
+TEST(Iterate3Points, call_N_times_until_p3_walk_over_ending_)
+{
+  iterator_begin(&g);
+  
+  for (int i = 0; i < g.num_pts - 1; ++i) {
+    iterator_next(&g, &p1, &p2, &p3);
   }
 
   CHECK_EQUAL(1, p1);
