@@ -122,3 +122,40 @@ int is_connected(struct Graph* g, int p1, int p2)
   return 0;
 }
 
+int is_same_line(struct Graph* g, int p1, int p2, int p3)
+{
+  assert(g);
+
+  int row = 0;
+  int* line_points = NULL;
+
+  for(row = 0; row < g->num_lns; ++row) {
+    line_points = g->lines + row * (g->num_pts + 1);
+    if ( line_points[p1] && line_points[p2] && line_points[p3]) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int count_triangles(struct Graph* g)
+{
+  int p1 = 0, p2 = 0, p3 = 0;
+  int cnt = 0;
+  
+  assert(g);
+
+  iterator_begin(g);
+  while ( ! iterator_end(g)) {
+    iterator_next(g, &p1, &p2, &p3);
+    if ( is_connected(g, p1, p2)
+	 && is_connected(g, p1, p3)
+	 && is_connected(g, p2, p3)
+	 && ! is_same_line(g, p1, p2, p3)) {
+      cnt += 1;
+    }
+  }
+
+  return cnt;
+}

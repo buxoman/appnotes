@@ -29,4 +29,8 @@ void iterator_next(struct Graph* g, int* p1, int* p2, int* p3);
 
 
 int is_connected(struct Graph* g, int p1, int p2);
+
+int is_same_line(struct Graph* g, int p1, int p2, int p3);
+
+int count_triangles(struct Graph* g);
 #endif	/* COUNT_TRIANGLES_H */
