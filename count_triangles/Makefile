@@ -2,7 +2,7 @@
 SILENCE =
 
 #---- Outputs ----#
-COMPONENT_NAME = funny_ranges
+COMPONENT_NAME = count_triangles
 TARGET_LIB = \
 	lib/lib$(COMPONENT_NAME).a
 
@@ -42,6 +42,7 @@ TEST_SRC_DIRS = \
 #includes for all compiles
 INCLUDES =\
   -I.\
+  -Isrc \
   -I$(CPPUTEST_HOME)/include\
 
 #Flags to pass to ld
