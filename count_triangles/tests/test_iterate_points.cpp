@@ -23,6 +23,7 @@ TEST_GROUP(Iterate3Points)
   {
     p1 = p2 = p3 = 0;
 
+    // my points: [1, 2, 3, 4, 5]
     for(int i = 0; i < 5; ++i) {
       test_points[i] = i + 1;
     }
@@ -48,10 +49,33 @@ TEST(Iterate3Points, call_once)
   CHECK_EQUAL(3, p3);
 }
 
+TEST(Iterate3Points, call_once_)
+{
+
+  iterator_begin(&g);
+  iterator_next(&g, &p1, &p2, &p3);
+
+  CHECK_EQUAL(1, p1);
+  CHECK_EQUAL(2, p2);
+  CHECK_EQUAL(3, p3);
+}
+
+
 TEST(Iterate3Points, call_twice)
 {
   iterate_points(&p1, &p2, &p3);
   iterate_points(&p1, &p2, &p3);
+
+  CHECK_EQUAL(1, p1);
+  CHECK_EQUAL(2, p2);
+  CHECK_EQUAL(4, p3);
+}
+
+TEST(Iterate3Points, call_twice_)
+{
+  iterator_begin(&g);
+  iterator_next(&g, &p1, &p2, &p3);
+  iterator_next(&g, &p1, &p2, &p3);
 
   CHECK_EQUAL(1, p1);
   CHECK_EQUAL(2, p2);
