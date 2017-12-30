@@ -1,0 +1,86 @@
+# -*- mode:org;coding:utf-8 -*-
+#+OPTIONS: h:3 num:3 toc:3
+#+OPTIONS: ^:{}
+#+STARTUP: inline content indent
+#+TITLE: OpenStack Installation
+
+* Ubuntu Server Install
+
+We are using Ubuntu 16.04 Server. During the install we choose and
+Guided *LVM partitioning layout*. This is important as LVM2 is required
+for the Cinder volume storage to be created.
+
+We do not need and unpartitioned space but make sure that you have
+over *20GB free space on the root partition*.
+
+DevStack will create loopback files to use as devices.
+
+During the install we add in the *OpenSSH Server*, *Standard System Tools*
+and basic Ubuntu Server for the task selection menu.
+
+* Install Python Systemd Support
+
+DevStack needs to be able to link in to systemd to manage services and
+as such will require the libraries to be installed:
+
+:  [tux@devstack ~]$ sudo apt-get install -y python-systemd
+
+* Create User Account
+
+The services that the DevStack install uses will need their own
+account. This account must have access to root privileges with
+sudo. In the following code you will see that we create the user stack
+with a default bash shell and a home directory located at
+/opt/stack. The -m option ensure the home directory is created.
+
+:  [tux@devstack ~]$ sudo useradd -s /bin/bash -d /opt/stack -m stack
+:  [tux@devstack ~]$ echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
+
+* Clone the DevStack GIT Repo
+
+The git client will be installed in 16.04 server by default so we
+should not need to add it. If we switch to the stack user account we
+can clone the latest DevStack repo. We then change to the downloaded
+code by moving into the devstack directory which will be in the home
+directory of the stack user.
+
+:  [tux@devstack ~]$ sudo su -l stack 
+:  [tux@devstack ~]$ git clone https://git.openstack.org/openstack-dev/devstack
+:  [tux@devstack ~]$ cd /opt/stack/devstack
+
+* DevStack Answer File
+
+We can create an answer file with the minimum configuration
+included. This will install the services onto the single host but we
+set the password to be used. You should create a *local.conf* file in
+the root of the devstack directory. You, of course, can use a
+different password if you prefer and make sure that you use your IP
+ADDRESS:
+
+:  [[local|localrc]]
+:  ADMIN_PASSWORD=Password1
+:  DATABASE_PASSWORD=$ADMIN_PASSWORD
+:  RABBIT_PASSWORD=$ADMIN_PASSWORD
+:  SERVICE_PASSWORD=$ADMIN_PASSWORD
+:  HOST_IP=10.0.2.4
+
+* Editing the /etc/hosts File
+
+We also want to make sure that we reference the actual host IP in the
+/etc/hosts file. You will see in the video that I add an entry to the
+file that reads like this. Making sure you use your IP Address and
+hostname:
+
+:  10.0.2.4  devstack
+
+* Starting the Install
+
+From the root of the devstack directory we can initiate the install by
+running the stack.sh script. This will take 20-40 minutes depending on
+the speed of your system and network
+
+:  [tux@devstack ~]$ ./stack.sh
+
+* References
+
+[[https://www.theurbanpenguin.com/installing-devstack-on-ubuntu-16-04/]]
