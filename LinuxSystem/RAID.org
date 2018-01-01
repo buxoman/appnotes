@@ -107,4 +107,7 @@ N-1块磁盘上都存储完整的数据，也就是说有相当于一块磁盘�
 
 ** 总结
 
-[[fiel:./images/raid-summary.png]]
+[[file:./images/raid-summary.png]]
+
+** 参考
++ http://blog.csdn.net/c1052981766/article/details/49612793
