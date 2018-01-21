@@ -1,5 +1,12 @@
+# -*- mode:org;coding:utf-8 -*-
+#+TITLE: 文学编程试验
 
+* 导出时插入代码执行结果
 
-#+BEGIN_SRC emacs-lisp
-(directory-files ".")
+#+HEADER: :var data1=1
+#+BEGIN_SRC emacs-lisp :var data2=2 :exports both
+   (message "data1:%S, data2:%S" data1 data2)
 #+END_SRC
+
+#+RESULTS:
+: data1:1, data2:2

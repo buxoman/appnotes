@@ -1,0 +1,556 @@
+
+
+
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>	
+<meta name="viewport" content="width=device-width, initial-scale=1"/>      
+<link rel="icon" href="//www.ibm.com/favicon.ico"/>
+<link rel="canonical" href="http://www.ibm.com/developerworks/cn/linux/l-cn-sclient/index.html"/>
+<meta name="geo.country" content="CN"/>
+<meta name="dcterms.rights" content="© Copyright IBM Corporation 2009"/>
+<meta name="dcterms.date" content="2009-04-15"/>
+<meta name="description" content="当前 SSL 协议有着广泛的运用，在 SSL 服务器的身份认证出现问题时，怎样才能有效快速的找出问题的根源呢？本文结合 openssl 提供的命令行工具 s_client，罗列了多种认证失败的情况，并给出了问题诊断的方法。"/>	
+<meta name="keywords" content="openssl,s_client,ssl,数字证书，诊断, tttlca"/>
+<meta name="robots" content="index,follow"/>
+<title>应用 openssl 工具进行 SSL 故障分析</title>
+    
+<script> 
+    digitalData = {
+        "page":{
+            "category":{
+                "primaryCategory":"SOFDCLNXCN"
+            },
+            "pageInfo":{
+                "effectiveDate":"2009-04-15",
+                "language":"zh-CN",
+                "publishDate":"2009-04-15",
+                "publisher":"IBM Corporation",
+                "version":"v18",
+                "ibm":{ 
+                    "contentDelivery":"IBM developerWorks template",
+                    "contentProducer":"IBM developerWorks",
+                    "country":"CN",
+                    "owner":"developerWorks/China/IBM",
+                    "subject":"SWGC0",
+                    "type":"CT316",
+                    "topic":"安全,开发工具",
+                    "topicId":"1,553",
+                    "contentArea":"linux",
+                    "contentAreaId":"2",
+                    "contentType":"article",
+                    "contentId":"382980",
+                },
+                "keywords":"openssl,s_client,ssl,数字证书，诊断, tttlca",
+                "description":"当前 SSL 协议有着广泛的运用，在 SSL 服务器的身份认证出现问题时，怎样才能有效快速的找出问题的根源呢？本文结合 openssl 提供的命令行工具 s_client，罗列了多种认证失败的情况，并给出了问题诊断的方法。"
+            }
+        }
+    };
+    window._analytics = {
+        "coremetrics": false,
+        "optimizely": false,
+        "googleAddServices": false,
+        "addRoll": false,
+        "intercom": false,
+        "fullStory": false,
+        "hotjar": false,
+        "tealeaf": false,
+        "nps": false,
+        "segment_key": 'HU3dbkAG5wE0F1IkRf9S1RexlAqo3jby'
+    };
+</script>
+	
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:site" content="@developerworks"/>
+<meta property="og:title" content="应用 openssl 工具进行 SSL 故障分析"/>
+<meta property="og:description" content="当前 SSL 协议有着广泛的运用，在 SSL 服务器的身份认证出现问题时，怎样才能有效快速的找出问题的根源呢？本文结合 openssl 提供的命令行工具 s_client，罗列了多种认证失败的情况，并给出了问题诊断的方法。"/>
+    <meta property="og:image" content="http://www.ibm.com/developerworks/i/dw-social-201508.png"/>
+<!-- Segment meta tag -->
+<meta name="segment" property="developerWorks (developerWorks)" productTitle="developerWorks" value="Linux Chinese (developerWorks)"/>      
+<!-- SITE MON : START (DO NOT DELETE) -->
+<!-- developerWorks monitoring token -->
+<!-- SITE MON : END (DO NOT DELETE) -->
+
+<!-- HEADER_SCRIPTS_AND_CSS_INCLUDE -->
+<!-- <script src="//cdn.optimizely.com/js/5399420604.js"></script> -->
+<!-- BEGIN: Use this section to set page specific variables for the Page Tag -->
+<script language="JavaScript">var NTPT_PGEXTRA="ibmSkillLevel=3&ibmCmaId=382980&ibmContentAreas=linux";</script>
+<!--END -->
+<script src="//1.www.s81c.com/common/stats/ida_stats.js"></script>
+<link href="//1.www.s81c.com/common/v18/css/www.css" rel="stylesheet">
+<link href="//1.www.s81c.com/common/v18/css/syntaxhighlighter.css" rel="stylesheet">
+<script src="//1.www.s81c.com/common/v18/js/www.js"></script>
+<script src="//1.www.s81c.com/common/v18/js/syntaxhighlighter.js"></script>    
+<link href="//1.www.s81c.com/common/v18/css/tables.css" rel="stylesheet">
+<script src="//1.www.s81c.com/common/v18/js/tables.js"></script>   
+<!--  Masthead/footer  -->
+<link href="//dw1.s81c.com/developerworks/css/dw-mf/v18/dw-mf-v18.css?v=110117a" rel="stylesheet">
+<!-- <link href="//dw1.s81c.com/developerworks/css/dw-mf/v18/alt-signedin-ux.css" rel="stylesheet" /> -->   
+<!--[if lt IE 9]>
+    <link href="//dw1.s81c.com/developerworks/css/dw-mf/v18/dw-mf-ie8fix.css?v=022216" rel="stylesheet" />
+<![endif]-->
+<link href="//dw1.s81c.com/developerworks/css/v18/dw-article.css?v=010318" rel="stylesheet">
+<script src="//dw1.s81c.com/developerworks/js/v18/dw-auth-properties.js?v=041017"></script>
+<script src="//dw1.s81c.com/developerworks/js/v18/dw-auth.js?v=062717"></script>
+<script src="//dw1.s81c.com/developerworks/js/dw-mf/v18/dw-mf.js?v=103117"></script>
+<script src="//dw1.s81c.com/developerworks/js/v18/dw-include.js"></script>     
+<script src="//dw1.s81c.com/developerworks/js/v18/dw-article.js?v=121217"></script>
+<script src="//dw1.s81c.com/developerworks/js/v18/dw-auto-links.js?v=121217"></script>     
+<script src="//www.ibm.com/software/info/js/tactic.js"></script>
+<script src="//www.ibm.com/software/info/js/tacticbindlinks.js"></script>
+<!-- Segment -->
+<script src="//console-regional.cdn.us-south.s-bluemix.net/analytics/build/bluemix-analytics.min.js"></script>    
+
+<!-- 
+<PageMap>
+    <DataObject type="document">
+        <Attribute name="topic">安全,开发工具</Attribute>
+        <Attribute name="topicId">1,553</Attribute>
+        <Attribute name="contentArea">linux</Attribute>
+        <Attribute name="contentAreaId">2</Attribute>
+        <Attribute name="abstract">当前 SSL 协议有着广泛的运用，在 SSL 服务器的身份认证出现问题时，怎样才能有效快速的找出问题的根源呢？本文结合 openssl 提供的命令行工具 s_client，罗列了多种认证失败的情况，并给出了问题诊断的方法。</Attribute>
+        <Attribute name="pub.date">2009-04-15</Attribute>
+        <Attribute name="contentType">article</Attribute>
+    </DataObject>
+</PageMap>
+-->        
+
+</head>
+<body id="ibm-com" class="ibm-type dw-js-disabled">
+	
+<div id="ibm-top" class="ibm-landing-page">
+
+<!-- MASTHEAD_BEGIN -->
+<div id="ibm-masthead" role="banner" aria-label="IBM">
+    <div id="ibm-universal-nav">    
+  
+        <nav role="navigation" aria-label="IBM">
+            <div id="ibm-home"><a href="https://www.ibm.com/cn/zh/">IBM®</a></div>
+            <ul id="ibm-menu-links" role="toolbar" aria-label="Site map">
+                <li><a href="https://www.ibm.com/sitemap/cn/zh/">站点地图</a></li>
+            </ul> 
+        </nav>
+  
+        <div id="ibm-search-module" role="search" aria-labelledby="ibm-masthead">
+            <form id="ibm-search-form" action="https://www.ibm.com/Search/" method="get">
+                <p>
+                    <label for="q">IBM</label>
+                    <input type="text" maxlength="100" value="" placeholder="搜索" name="q" id="q" aria-label="搜索 developerWorks"/>
+                    <input type="hidden" value="18" name="v"/>
+                    <input type="hidden" value="utf" name="en"/>
+                    <input type="hidden" value="zh" name="lang"/>
+                    <input type="hidden" value="cn" name="cc"/>
+                    <input type="hidden" name="sn" value="dw" />
+                    <input type="hidden" name="dws" value="cndw" />
+                    <input type="hidden" name="hpp" value="20" />
+                    <input type="submit" id="ibm-search" class="ibm-btn-search" value="提交"/>
+                </p>
+            </form>
+        </div>
+       
+    </div>
+</div><!-- MASTHEAD_END -->
+	    
+<!-- LAYOUT -->
+<div id="ibm-content-wrapper">
+    <!-- LEADSPACE_BEGIN -->
+    <header role="banner" aria-labelledby="ibm-pagetitle-h1">
+        
+        <!-- MASTHEAD_SITENAV_BEGIN -->
+        <div class="ibm-sitenav-menu-container">
+    <div class="ibm-sitenav-menu-name">
+        <a href="//www.ibm.com/developerworks/cn/">
+            <img width="186" height="24" alt="developerWorks®" src="//dw1.s81c.com/developerworks/i/mf/dw-mf-wordmark.svg"/>
+        </a>
+    </div>
+    <div class="ibm-sitenav-menu-list">
+        <ul role="menubar">
+                            <li class="dw-navpage-learn" role="presentation">
+                    <a href="//www.ibm.com/developerworks/cn/topics/" role="menuitem">学习</a>
+                </li>
+                    
+                <li class="dw-navpage-develop" role="presentation">
+                    <a href="//www.ibm.com/developerworks/cn/downloads/" role="menuitem">开发</a>
+                </li>                    
+
+                <li class="dw-navpage-connect" role="presentation">
+                    <a href="//www.ibm.com/developerworks/cn/community/" role="menuitem">社区</a>
+                </li>  
+        </ul>
+    </div>
+</div>        <!-- MASTHEAD_SITENAV_END -->
+        
+        <!-- NAVIGATION_TRAIL_BEGIN -->
+        <div id="ibm-leadspace-head" class="ibm-alternate">
+            <div id="ibm-leadspace-body">
+                <nav aria-label="Breadcrumb" role="navigation">                     
+                            <ul id="dw-navigation-trail" itemscope="" itemtype="http://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem"><a itemprop="item" href="https://www.ibm.com/developerworks/cn/topics/"><span itemprop="name">学习</span></a><meta itemprop="position" content="1"/></li><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem"><a itemprop="item" href="https://www.ibm.com/developerworks/cn/linux/"><span itemprop="name">Linux</span></a><meta itemprop="position" content="2"/></li></ul>
+                </nav>
+            </div>
+        </div>
+        <!-- NAVIGATION_TRAIL_END -->
+        
+    </header>
+    <!-- LEADSPACE_END -->
+    
+    <!-- MAIN_CONTENT_BEGIN -->
+    <main role="main" aria-labelledby="ibm-pagetitle-h1"> 
+        <div id="ibm-pcon">
+            <!-- BEGIN_IBM-CONTENT -->
+            <div id="ibm-content">
+                <!-- BEGIN_IBM-CONTENT-BODY -->
+                <div id="ibm-content-body">
+                    <!-- BEGIN_IBM-CONTENT-MAIN -->
+                    <div id="ibm-content-main" class="dw-article">                        
+                        <!-- BEGIN_INTERIOR-COLUMNS -->
+                                <div class="ibm-columns dw-article-toc">
+                                    <!-- LEFT_6_2_CONTENT_COLUMN_BEGIN -->  
+                                    <div id="dw-article-toc-container" class="ibm-col-6-2">
+                                        <div id="dw-article-toc-body">
+                                            <h2>内容</h2><div class="ibm-alternate-rule"><hr/></div><ul role="directory" aria-label="内容" class="ibm-plain-list"><li><a href="#ibm-pagetitle-h1">概览</a></li><li><a href="#1SSL握手协议">SSL 握手协议</a></li><li><a href="#2s_client简介">s_client 简介</a></li><li><a href="#3s_client在SSL握手协议中的应用">s_client 在 SSL 握手协议中的应用</a></li><li><a href="#4结束语">结束语</a></li><li><a href="#artrelatedtopics">相关主题</a></li><li><a href="#icomments">评论</a></li></ul>
+                                        </div>
+                                    </div>
+                                    <!-- LEFT_6_2_CONTENT_COLUMN_END -->
+                                    
+                                    <!-- CENTER_6_4_CONTENT_COLUMN_BEGIN -->
+                                    <div class="ibm-col-6-4">
+                                        <h1 id="ibm-pagetitle-h1" class="ibm-h1">应用 openssl 工具进行 SSL 故障分析</h1>
+                                        <!-- Article Top Bar -->
+                                                <div class="ibm-columns dw-article-topbar">
+                                                    <!-- Author and article info. -->
+                                                    <div class="ibm-col-6-2 ibm-col-medium-6-4 dw-article-metadata">
+                                                        <div class="dw-article-avatar"><img width="42" height="42" src="//dw1.s81c.com/developerworks/i/v18/article/dw-author.png" alt=""/></div><div class="dw-article-authordate">周 蕾蕾<br /><span class="dw-article-pubdate">2009 年 4 月 15 日发布</span></div>
+                                                    </div>
+                                                    <!-- Social -->
+                                                    <div class="ibm-col-6-2 ibm-col-medium-6-4 ibm-col-small-6-2 dw-article-social">
+                                                        <!-- Sharing links -->
+                                                        <div id="dw-article-share-inline">
+                                                            <div class="dw-article-sharelink-inline">
+                                                                <div class="ibm-sharethispage"></div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Number of comments and link to comments -->
+                                                        <div id="dw-article-cmts">
+                                                            <div class="dw-article-cmtslink">
+                                                                <a onclick="tocLink('#icomments')" href="#icomments" role="link" tabindex="0" aria-label="Comments">
+                                                                    <img src="//dw1.s81c.com/developerworks/i/v18/article/dw-article-cmt-icon.png" width="29" height="29" alt="Comments"/>
+                                                                </a>
+                                                            </div>
+                                                            <div class="dw-article-cmtslink">
+                                                                <a onclick="tocLink('#icomments')" href="#icomments" role="link" tabindex="0">
+                                                                    <div id="nCmts"></div>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Article Body -->
+                                        
+                                        <h2 id="1SSL握手协议" class="ibm-h2">SSL 握手协议</h2><p>首先简单的介绍一下 SSL 协议建立连接的过程。如图 1 所示，主要有如下几个过程：</p><h5 id="N1003F" class="ibm-h5">图 1. SSL 身份认证及协商密钥的过程</h5><img src="images/image001.gif" class="ibm-downsize" alt="SSL 身份认证及协商密钥的过程" height="512" width="568"/><p class="ibm-ind-link"><a class="ibm-popup-link" onclick="IBMCore.common.widget.overlay.show('N10043');return false;" href="#N10043">点击查看大图</a></p><div class="ibm-common-overlay ibm-overlay-alt-three" data-widget="overlay" id="N10043"><img alt="SSL 身份认证及协商密钥的过程" src="images/image001.gif" width="568" /></div><ul class="ibm-bullet-list"><li>客户端发起请求，包含一个<code>hello</code>消息，并附上客户端支持的密码算法和 SSL 协议的版本消息以及用于生成密钥的随机数。</li><li>服务器收到消息后，服务器端选择加密压缩算法并生成服务器端的随机数，将该信息反馈给客户端；接着服务器端将自身的数字证书（在图 1 中使用了一个 X.509 数字证书）发送到客户端；完成上述动作后后服务器端会发送“<code>hello done</code>”消息给客户端。此外如果服务器需要对客户端进行身份认证，服务器端还会发送一个请求客户端证书的消息。</li><li>一旦客户端收到”<code>hello done</code>” , 就开始对服务器端的数字证书进行认证并检查服务器端选中的算法是可行的。如果服务器要求认证客户端身份，客户端还会发送自己的公钥证书。</li><li>如果对服务器的身份认证通过，客户端会发起密钥交换的请求。</li><li>服务器端和客户端根据先前协商的算法和交换随机数生成对称密钥进行后续的通信。</li></ul><h2 id="2s_client简介" class="ibm-h2">s_client 简介</h2><p>openssl 提供了 SSL 协议的一个开放源代码的实现，包含三部分：ssl 库，加解密库和命令行工具。在命令行工具中 s_client 是一个以 SSL 协议连接远程服务器的客户端程序，该工具可以用于测试诊断。虽然 s_client 只提供了一些基础功能，但是其内部具体实现中使用了 ssl 库的大部分接口。</p><p><code>s_client</code>命令行的语法为：</p><h5 id="N10069" class="ibm-h5">清单 1. s_client 参数</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">openssl s_client [-connect host:port&gt;] [-verify depth] [-cert filename] [-key filename] 
+ [-CApath directory] [-CAfile filename][-reconnect] [-pause] [-showcerts] [-debug] [-msg] 
+ [-nbio_test] [-state] [-nbio] [-crlf] [-ign_eof] [-quiet]</pre></span><p>常用参数的具体用途如下：</p><ul class="ibm-bullet-list"><li>-connect host:port ：指定远程服务器的地址和端口，如果没有该参数，默认值为 localhost:443 ；</li><li>-cert filename：若服务器端需要验证客户端的身份，通过 -cert 指定客户端的证书文件。</li><li>-key filename：指定私钥文件；</li><li>-verify depth：打开服务器证书验证并定义证书验证过程中的最大深度。</li><li>-showcerts：显示服务器证书链；</li><li>-CAfile filename：指定用于验证服务器证书的根证书；</li><li>-state：打印出 SSL 会话的状态。</li></ul><h2 id="3s_client在SSL握手协议中的应用" class="ibm-h2">s_client 在 SSL 握手协议中的应用</h2><p>在连接 SSL 服务器时最常见的问题就是客户端认证服务器端身份失败，有多种原因造成这些失败，以下列举了常见的错误并解析了如何应用 s_client 进行确诊。</p><ul class="ibm-bullet-list"><li>服务器的证书在传输过程中被篡改
+<ol type="1"><li>提取服务器的证书：</li></ol></li></ul><p>在 linux 平台下创建脚本 retrieve-cert.sh 并存入一下清单 2 中的内容。该脚本的输出内容就是服务器端的 X509 证书经过 Base64 编码后的内容，执行脚本并将脚本输出存入文件 server.pem 中。</p><h5 id="N10092" class="ibm-h5">清单 2. 提取证书</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">###usage: retrieve-cert.sh remote.host.name [port] 
+ SSLHOST=$1 
+ SSLPORT=${2:-443} 
+ echo |\ 
+ openssl s_client -connect ${SSLHOST}:${SSLPORT} 2&gt;&amp;1 |\ 
+ sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p'</pre></span><ol type="1"><li>验证获取的证书，在命令行下执行”<code>openss verify server.pem</code>”。</li></ol><p>如果证书内容被篡改，那么执行后的结果如清单 4 所示：</p><h5 id="N100A3" class="ibm-h5">清单 4. 证书验证失败</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wks547385wss openssl]# openssl verify server.pem 
+ unable to load certificate 
+ 19280:error:0D0680A8:asn1 encoding routines:ASN1_CHECK_TLEN:wrong tag:tasn_dec.c:947: 
+ 19280:error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 
+ error:tasn_dec.c:304:Type=X509 
+ 19280:error:0906700D:PEM routines:PEM_ASN1_read_bio:ASN1 lib:pem_oth.c:82:</pre></span><p>否则的话，我们就能得到认证通过，结果如下：</p><h5 id="N100AD" class="ibm-h5">清单 5. 证书验证成功</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wks547385wss openssl]# openssl verify server.pem 
+ server.pem: OK</pre></span><ul class="ibm-bullet-list"><li>客户端没有保存认证服务器端的证书的根证书；</li></ul><p>1. 使用参数<code>-state</code>检查是否在握手协议的证书认证时失败</p><h5 id="N100BD" class="ibm-h5">清单 6. 显示 SSL 握手协议状态</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wks547385wss openssl]# openssl s_client  -connect www6.software.ibm.com:443 -state 
+ CONNECTED(00000003) 
+ SSL_connect:before/connect initialization 
+ SSL_connect:SSLv2/v3 write client hello A 
+ SSL_connect:SSLv3 read server hello A 
+ depth=1 /C=US/O=Equifax/OU=Equifax Secure Certificate Authority 
+ verify error:num=19:self signed certificate in certificate chain 
+ verify return:0 
+ SSL_connect:SSLv3 read server certificate A 
+ SSL_connect:SSLv3 read server done A 
+ SSL_connect:SSLv3 write client key exchange A 
+ SSL_connect:SSLv3 write change cipher spec A 
+ SSL_connect:SSLv3 write finished A 
+ SSL_connect:SSLv3 flush data 
+ SSL_connect:SSLv3 read finished A</pre></span><p>2. 运用 s_client 参数<code>-showcerts</code>获取服务器端的根证书，服务器端的证书链将会全部显示出来，在证书链的末端就是根证书，保存证书文件为<code>serverCA.pem 。</code></p><h5 id="N100CC" class="ibm-h5">清单 7. 获取服务器端的根证书</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wkswss openssl]# openssl s_client -connect www6.software.ibm.com:443 – showcerts 
+…
+ s:/C=US/O=Equifax/OU=Equifax Secure Certificate Authority 
+ i:/C=US/O=Equifax/OU=Equifax Secure Certificate Authority 
+ -----BEGIN CERTIFICATE----- 
+ MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJV 
+ UzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2Vy 
+ dGlmaWNhdGUgQXV0aG9yaXR5MB4XDTk4MDgyMjE2NDE1MVoXDTE4MDgyMjE2NDE1 
+ MVowTjELMAkGA1UEBhMCVVMxEDAOBgNVBAoTB0VxdWlmYXgxLTArBgNVBAsTJEVx 
+ dWlmYXggU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0eTCBnzANBgkqhkiG9w0B 
+ AQEFAAOBjQAwgYkCgYEAwV2xWGcIYu6gmi0fCG2RFGiYCh7+2gRvE4RiIcPRfM6f 
+ BeC4AfBONOziipUEZKzxa1NfBbPLZ4C/QgKO/t0BCezhABRP/PvwDN1Dulsr4R+A 
+ cJkVV5MW8Q+XarfCaCMczE1ZMKxRHjuvK9buY0V7xdlfUNLjUA86iOe/FP3gx7kC 
+ AwEAAaOCAQkwggEFMHAGA1UdHwRpMGcwZaBjoGGkXzBdMQswCQYDVQQGEwJVUzEQ 
+ MA4GA1UEChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2VydGlm 
+ aWNhdGUgQXV0aG9yaXR5MQ0wCwYDVQQDEwRDUkwxMBoGA1UdEAQTMBGBDzIwMTgw 
+ ODIyMTY0MTUxWjALBgNVHQ8EBAMCAQYwHwYDVR0jBBgwFoAUSOZo+SvSspXXR9gj 
+ IBBPM5iQn9QwHQYDVR0OBBYEFEjmaPkr0rKV10fYIyAQTzOYkJ/UMAwGA1UdEwQF 
+ MAMBAf8wGgYJKoZIhvZ9B0EABA0wCxsFVjMuMGMDAgbAMA0GCSqGSIb3DQEBBQUA 
+ A4GBAFjOKer89961zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y 
+ 7qj/WsjTVbJmcVfewCHrPSqnI0kBBIZCe/zuf6IWUrVnZ9NA2zsmWLIodz2uFHdh 
+ 1voqZiegDfqnc1zqcPGUIWVEX/r87yloqaKHee9570+sB3c4 
+ -----END CERTIFICATE-----</pre></span><p>3. 运用 s_client 参数<code>-CAfile CA.pem</code>再次连接服务器</p><h5 id="N100D9" class="ibm-h5">清单 8. 设定服务器证书文件建立 SSL 连接</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wkswss openssl]# openssl s_client -CAfile serverCA.pem -connect 
+ www6.software.ibm.com:443 -state 
+ CONNECTED(00000003) 
+ SSL_connect:before/connect initialization 
+ SSL_connect:SSLv2/v3 write client hello A 
+ SSL_connect:SSLv3 read server hello A 
+ depth=1 /C=US/O=Equifax/OU=Equifax Secure Certificate Authority 
+ verify return:1 
+ depth=0 /C=US/O=IBM/CN=www6.software.ibm.com 
+ verify return:1 
+ SSL_connect:SSLv3 read server certificate A 
+ SSL_connect:SSLv3 read server done A 
+ SSL_connect:SSLv3 write client key exchange A 
+ SSL_connect:SSLv3 write change cipher spec A 
+ SSL_connect:SSLv3 write finished A 
+ SSL_connect:SSLv3 flush data 
+ SSL_connect:SSLv3 read finished A 
+……
+ SSL-Session: 
+    Protocol  : TLSv1 
+    Cipher    : DES-CBC3-SHA 
+    Session-ID: 00365044871540E334826923BF9C531CE659274858585858499C14380000000C 
+    Session-ID-ctx: 
+    Master-Key: 
+ D065F1F2297560F1CD4CCC0D7A58E647CC9F596BCEC545CF90DD54659CB36C53CDAC977E5784C6 
+ A273BA28B486E578B9 
+    Key-Arg   : None 
+    Krb5 Principal: None 
+    Start Time: 1234986898 
+    Timeout   : 300 (sec) 
+    Verify return code: 0 (ok)</pre></span><ul class="ibm-bullet-list"><li>客户端拥有认证服务器证书的根证书，但是服务器被防火墙隔离，防火墙在收到来自客户端的 SSL 连接请求时返回防火墙的证书。这种情况下的症状跟服务器证书被篡改非常相似，但是区别在于应用上述提及的方法仍然不能定位错误。</li></ul><p>1. 客户端已经拥有服务器 build.rchland.ibm.com 的根证书<code>rochCA.pem</code>，当客户端试图连接服务器客户时，对服务器的证书认证却不能通过。</p><h5 id="N100E9" class="ibm-h5">清单 9. 认证失败</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wks547385wss openssl]# openssl s_client -CAfile roch.pem -state -connect 
+ build.rchland.ibm.com:443 
+ CONNECTED(00000003) 
+ SSL_connect:before/connect initialization 
+ SSL_connect:SSLv2/v3 write client hello A 
+ SSL_connect:SSLv3 read server hello A 
+ depth=0 /serialNumber=93e352/CN=rch-fw-1a.rchland.ibm.com/unstructuredName= 
+ rch-fw-1a.rchland.ibm.com 
+ verify error:num=18:self signed certificate 
+ verify return:1 
+ depth=0 /serialNumber=93e352/CN=rch-fw-1a.rchland.ibm.com/unstructuredName= 
+ rch-fw-1a.rchland.ibm.com 
+ verify return:1 
+ SSL_connect:SSLv3 read server certificate A 
+ SSL_connect:SSLv3 read server done A 
+ SSL_connect:SSLv3 write client key exchange A 
+ SSL_connect:SSLv3 write change cipher spec A 
+ SSL_connect:SSLv3 write finished A 
+ SSL_connect:SSLv3 flush data 
+ SSL_connect:SSLv3 read finished A 
+…</pre></span><p>2. 使用<code>x509</code>工具，查看根证书的具体内容，特别是证书签发者和持有者的身份，如清单 10 所示。</p><h5 id="N100F6" class="ibm-h5">清单 10. 解码根证书</h5><span class="dw-code-nohighlight"><pre data-widget="syntaxhighlighter" class="brush: js; html-script: true; gutter: true;">[root@wks547385wss openssl]# openssl x509 -text -in roch.pem 
+ Certificate: 
+    Data: 
+        Version: 3 (0x2) 
+        Serial Number: 903804111 (0x35def4cf) 
+        Signature Algorithm: sha1WithRSAEncryption 
+        Issuer: C=US, O=Equifax, OU=Equifax Secure Certificate Authority 
+        Validity 
+            Not Before: Aug 22 16:41:51 1998 GMT 
+            Not After : Aug 22 16:41:51 2018 GMT 
+        Subject: C=US, O=Equifax, OU=Equifax Secure Certificate Authority 
+        Subject Public Key Info: 
+            Public Key Algorithm: rsaEncryption 
+            RSA Public Key: (1024 bit)</pre></span><p>有了上述的证书签发者信息后，我们的问题就迎刃而解了，客户端收到了来自防火墙的证书，该证书和防火墙后面的服务器的数字证书来自不同的签发者。</p><h2 id="4结束语" class="ibm-h2">结束语</h2><p>openssl 提供的 ssl 库被广泛的运用的同时，也增加了程序员在诊断通讯故障的难度。巧妙的运用 s_client 无疑给程序员带来了一把利刃，特别是缺乏调试工具的环境下，如嵌入式系统。</p><!--CMA ID: 382980--><!--Site ID: 10--><!--XSLT stylesheet used to transform this file: dw-document-html-8.0.xsl-->
+                                        <!-- Article Quiz -->
+                                        
+                                        <!-- Article Resources -->
+                                        <div class="ibm-alternate-rule"><hr/></div><h4 id="artrelatedtopics" class="ibm-h4">相关主题</h4><ul><li><a href="http://en.wikipedia.org/wiki/Secure_Sockets_Layer#Handshake_protocol">SSL 协议</a>提供了 SSL 协议的简介、握手协议和主要报文格式</li><li><a href="http://en.wikipedia.org/wiki/Public_key_infrastructure">PKI</a> 公钥体系架构简介</li><li>如果需要了解 X509 证书的细节，查看 <a href="http://en.wikipedia.org/wiki/X509#Structure_of_a_certificate">X509</a></li><li><a href="http://www.openssl.org/docs/apps/s_client.html#">s_client</a> 使用完全解析</li><li>更多了解 openssl 可查阅 <a href="http://www.openssl.org/docs/">openssl 文档</a></li><li> 在 <a href="http://www.ibm.com/developerworks/cn/linux/"> developerWorks Linux 专区</a> 寻找为 Linux 开发人员（包括 <a href="http://www.ibm.com/developerworks/cn/linux/newto/">Linux 新手入门</a>）准备的更多参考资料，查阅我们 <a href="http://www.ibm.com/developerworks/cn/linux/top10/index.html">最受欢迎的文章和教程</a>。 </li><li>在 developerWorks 上查阅所有 <a href="http://www.ibm.com/developerworks/cn/views/linux/libraryview.jsp?search_by=Linux+%E6%8A%80%E5%B7%A7"> Linux 技巧</a> 和 <a href="http://www.ibm.com/developerworks/cn/views/linux/libraryview.jsp?type_by=%E6%95%99%E7%A8%8B"> Linux 教程</a>。 </li></ul>
+                                        <!-- Commenting -->
+<!-- INLINE_COMMENTS_BEGIN: -->
+<div class="ibm-alternate-rule"><hr/></div>
+<div id="dw-article-cmts-top" class="ibm-columns">
+    <div class="ibm-col-6-2">
+        <h4 id="icomments" class="ibm-h4">评论</h4>
+        <div id="dw-article-cmts-login">
+            <p>添加或订阅评论，请先<a onClick="window.location=userLinks[0].url;" tabindex="0" role="link">登录</a>或<a onClick="window.location=userLinks[1].url;" tabindex="0" role="link">注册</a>。</p>
+        </div>
+    </div>    
+    <div class="ibm-col-6-2" id="dw-notify"> 
+        <input type="checkbox" value="1" name="comment_notification" id="comment_notification" disabled="disabled">
+        <label for="comment_notification">有新评论时提醒我</label>	   
+    </div>
+</div>
+
+<div class="dw-article-cmts-container">       
+    <div class="ibm-no-print" id="dw-icomments-container">	
+        
+    </div>
+</div>
+<!-- INLINE_COMMENTS_END -->                                        <!-- CENTER_6_4_CONTENT_COLUMN_END -->
+                                    </div>   
+                                </div>
+                        <!--Rating_Meta_BEGIN--><div class="metavalue">static.content.url=http://www.ibm.com/developerworks/js/artrating/</div><div class="metavalue">SITE_ID=10</div><div class="metavalue">Zone=Linux</div><div class="metavalue">ArticleID=382980</div><div class="metavalue">ArticleTitle=应用 openssl 工具进行 SSL 故障分析</div><div class="metavalue">publish-date=04152009</div><script language="javascript" type="text/javascript">document.write('<div class="metavalue">url='+location.href.replace(/</g,  '%3C')+'</div>');</script><!--Rating_Meta_END-->
+                    </div>
+                    <!-- END_IBM-CONTENT-MAIN -->
+                </div>
+                <!-- END_IBM-CONTENT-BODY -->
+            </div>
+            <!-- END_IBM-CONTENT -->
+        </div>
+        <!-- END_IBM-PCON -->
+    </main>
+    <!-- MAIN_CONTENT_END -->
+    
+    <!-- END_CONTENT-WRAPPER -->	
+</div>
+<!-- FOOTER_BEGIN -->
+<footer role="contentinfo" aria-label="IBM developerWorks">
+    <div id="dw-footer-module" class="dw-footer-home">
+        <section aria-label="参考资料" role="contentinfo">
+            <div class="ibm-columns">
+                <div class="ibm-col-6-1 dw-footer-col-1">
+                    <ul>
+                        <li class="dw-footer-heading" aria-label="developerWorks">developerWorks</li>
+                        <li><a href="//www.ibm.com/developerworks/secure/feedback.jsp?domain=dwchina">站点反馈</a></li>
+                        <li class="dw-footer-newline"><a href="//www.ibm.com/developerworks/secure/myideas2.jsp?domain=dwchina">我要投稿</a></li>
+                        <li class="dw-footer-newline"><a href="//www.ibm.com/developerworks/cn/author/">投稿指南</a></li>
+                        <li class="dw-footer-newline"><a href="//www.ibm.com/developerworks/community/report?lang=zh">报告滥用</a></li>
+                        <li class="dw-footer-newline"><a href="//www.ibm.com/developerworks/cn/community/terms/thirdparty/">第三方提示</a></li>
+                    </ul>
+                    <ul>
+                        <li class="dw-footer-newline"><a href="//weibo.com/ibmdw/">关注微博</a></li>
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-2">
+                    <ul>
+                        <li class="dw-footer-heading" aria-label="加入">加入</li>
+                        <li class="dw-footer-newline"><a href="//www.ibm.com/partnerworld/isv/">ISV 资源 (英语)</a></li>
+                    </ul>
+                    <ul class="dw-footer-lang" aria-label="选择语言">
+                        <li class="dw-footer-heading">选择语言</li>
+                        <li><a href="//www.ibm.com/developerworks/">English</a></li>
+                        <li><a href="//www.ibm.com/developerworks/cn/" lang="zh">中文</a></li>
+                        <li><a href="//www.ibm.com/developerworks/jp/" lang="ja">日本語</a></li>
+                        <li><a href="//www.ibm.com/developerworks/ru/" lang="ru">Русский</a></li>
+                        <li class="dw-footer-newline"><a href="//www.ibm.com/developerworks/br/" lang="pt">Português (Brasil)</a></li>
+                        <li><a href="//www.ibm.com/developerworks/ssa/" lang="es">Español</a></li>
+                        <li><a href="//developer.ibm.com/kr/" lang="kr">한글</a></li>
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-3"> </div>
+                <div class="ibm-col-6-1 dw-footer-col-4">
+                    <ul class="dw-footer-categories">
+                        <li class="dw-footer-category">
+                            <a href="//www.ibm.com/developerworks/cn/views/global/libraryview.jsp">技术文档库</a>
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="http://ibmdeveloperworks.mkt6741.com/developerWorksChina-NewsletterSubscriptionPage/">dW 中国时事通讯</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="//developer.ibm.com/cn/dwblog/">博客</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="//developer.ibm.com/cn/events/">活动</a>  
+                        </li>
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-5">
+                    <ul class="dw-footer-categories">
+                        <li class="dw-footer-category">
+                            <a href="//www.ibm.com/developerworks/cn/community/">社区</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="//developer.ibm.com/cn/">开发者中心</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="//developer.ibm.com/cn/tv/">视频</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="//www.ibm.com/developerworks/cn/rss/">订阅源</a>  
+                        </li>
+
+                    </ul>
+                </div>
+                <div class="ibm-col-6-1 dw-footer-col-6">
+                    <ul class="dw-footer-categories">
+                        <li class="dw-footer-category">
+                            <a href="//www.ibm.com/developerworks/cn/downloads/">软件下载</a>  
+                        </li>
+                        <li class="dw-footer-category">
+                            <a href="//developer.ibm.com/cn/journey/">Code patterns</a>  
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div id="dw-footer" class="ibm-padding-normal ibm-alternate">
+        <div class="ibm-columns">
+            <div class="ibm-col-1-1">
+                <div class="dw-footer-corporate-links">
+                <ul>
+                    <li><a href="//www.ibm.com/contact/cn/zh/">联系 IBM</a></li>
+                    <li><a href="//www.ibm.com/privacy/cn/zh/">隐私条约</a></li>
+                    <li><a href="//www.ibm.com/developerworks/community/terms?lang=zh">使用条款</a></li>
+                    <li><a href="//www.ibm.com/accessibility/cn/zh/">信息无障碍选项</a></li>
+                    <li class="ibm-feedbacklink"><a href="#">反馈</a></li>
+                    <li id="ibm-truste-cp"><a onclick="truste.eu.clickListener();return false;" href="#">Cookie 首选项</a></li>
+                </ul>                 
+                </div>    
+            </div>
+        </div>
+    </div>        
+</footer> <!-- FOOTER_END -->
+
+<!-- END_IBM-TOP -->
+</div>
+
+<!-- SCRIPTS_INCLUDE_BEGIN -->
+<!-- Styles -->
+<link rel="stylesheet" type="text/css" href="/developerworks/maverick/css/plugin/comments/jquery-comments.css">
+<link rel="stylesheet" href="/developerworks/maverick/fonts/awesome-4.5.0/css/font-awesome.min.css">
+
+<!-- Libraries -->
+<script type="text/javascript" src="/developerworks/maverick/js/plugin/comments/jquery-comments.min.js"></script>
+<script type="text/javascript" src="/developerworks/maverick/js/plugin/formatter/moment-with-locales.js"></script>
+<script type="text/javascript" src="/developerworks/maverick/js/ContentComments.js"></script>
+<script type="text/javascript" src="/developerworks/js/v18/ContentCommentsFormatter.js"></script>
+<script type="text/javascript" language="JavaScript">
+
+	IBMCore.common.module.masthead.subscribe("ready", "customjs", setupCommentsPlugin).runAsap(setupCommentsPlugin);
+
+	function setupCommentsPlugin(){
+		//debugger;
+			//alert(userLinks);
+			var commentsInitInfo = {
+				contentId : $("div[class=metavalue]:contains('ArticleID=')").text().split("=")[1],
+				siteId :  $("div[class=metavalue]:contains('SITE_ID=')").text().split("=")[1],
+				pluginDivId : '#dw-icomments-container',
+				notifyElementId : "#comment_notification",
+				loginMessageDivId : "#dw-article-cmts-login",
+				totalCommentsDivId : "#nCmts",
+						isIdea:false
+
+			};				
+								
+			ContentComments.Setup(commentsInitInfo);
+	}
+</script>
+<!-- Hotjar Tracking Code for ibm.com -->
+<script>
+    (function(h,o,t,j,a,r){
+    h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+    h._hjSettings={hjid:42920,hjsv:5};
+    a=o.getElementsByTagName('head')[0];
+    r=o.createElement('script');r.async=1;
+    r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+    a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+</script>
+<!-- SCRIPTS_INCLUDE_END -->
+
+</body>
+</html>

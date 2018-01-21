@@ -1,0 +1,93 @@
+# -*- coding:utf-8 -*-
+#+TITLE: Converting PEM-format keys to JKS format
+
+#+BEGIN_QUOTE
+Translated into Chinese From:
+https://docs.oracle.com/cd/E35976_01/server.740/es_admin/src/tadm_ssl_convert_pem_to_jks.html
+#+END_QUOTE
+
+使用两个工具：
+- openssl
+- keytool
+
+输入： 
+- eneCert.pem : 仅含私钥
+- eneCA.pem  :  含公钥及信任数据库
+
+输出：
+- keystore.ks : 仅含导入的私钥
+- truststore.ks : 含导入的公钥及信任数据库
+
+步骤：
+
+1. 使用下列命令，将PEM转换到PKCS12格式。
+   : openssl pkcs12 -export -out eneCert.pkcs12 -in eneCert.pem
+   可以忽略此命令给出的告警消息。
+
+2. 上述命令要求提供密码。输入正确密码即可。
+
+3. 使用下列命令，创建一个空的信任数据库 truststore.ks，然后再删除该数据库中创建的默
+   认条目 endeca。
+   : keytool -genkey -keyalg RSA -alias endeca -keystore truststore.ks
+   : keytool -delete -alias endeca -keystore truststore.ks
+   第一个 *-genkey* 命令会创建一个默认的证书，如下所示。这是一个临时证
+   书，随后就通过 *-delete* 命令给删除了。所以，这里输入任何信息都是无
+   所谓的。
+   #+BEGIN_EXAMPLE
+     Enter keystore password:
+     Re-enter new password:
+     What is your first and last name?
+       [Unknown]: 
+     What is the name of your organizational unit?
+       [Unknown]:  
+     What is the name of your organization?
+       [Unknown]:  
+     What is the name of your City or Locality?
+       [Unknown]: 
+     What is the name of your State or Province?
+       [Unknown]: 
+     What is the two-letter country code for this unit?
+       [Unknown]: 
+     Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+       [no]: yes
+
+     Enter key password for <endeca>
+	     (RETURN if same as keystore password):
+     Re-enter new password:
+   #+END_EXAMPLE
+
+4. 使用下列命令，将 PEM 格式的信任数据库 CA 导入到前一步生成的信任数据
+   库文件中。
+   : keytool -import -v -trustcacerts -alias endeca-ca -file eneCA.pem -keystore truststore.ks
+
+5. 上一步要求输入 truststore.ks 的访问密码（在第3步中设定的）。正确输
+   入即可。
+
+6. 接下来会弹出一个问题： Trust this certificate? 键入 yes 表示确认。
+
+7. 使用下列命令，创建一个空的 Java Keystore 。
+   : keytool -genkey -keyalg RSA -alias endeca -keystore keystore.ks
+   : keytool -delete -alias endeca -keystore keystore.ks
+   命令 *-genkey* 创建一个默认的证书，如下所示。这个证书是临时的，随后
+   就通过 *-delete* 命令给删除了。所以输入任何信息都是无所谓的。
+   #+BEGIN_EXAMPLE
+     Enter keystore password:
+     Re-enter new password:
+     What is your first and last name?
+       [Unknown]: 
+     What is the name of your organizational unit?
+       [Unknown]:  
+     What is the name of your organization?
+       [Unknown]:  
+     What is the name of your City or Locality?
+       [Unknown]: 
+     What is the name of your State or Province?
+       [Unknown]: 
+     What is the two-letter country code for this unit?
+       [Unknown]: 
+     Is CN="Unknown", OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+       [no]: yes
+   #+END_EXAMPLE
+
+8. 使用下列命令，导入 PEM 私钥到前面生成的 keystore 文件中。
+   : keytool -v -importkeystore -srckeystore eneCert.pkcs12 -srcstoretype PKCS12 -destkeystore keystore.ks -deststoretype JKS

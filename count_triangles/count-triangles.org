@@ -1,0 +1,141 @@
+#+TITLE: 计算图形中的三角形个数
+
+* 计算图形中的三角形个数
+
+** Problem
+如图所示，计算图形中三角形的个数。
+
+** 解题思路
+
+** How to represent the graph
+
+#+BEGIN_SRC c  :exports code :tangle yes :tangle count_triangles_tangled.c
+struct Graph
+{
+  int num_pts;
+  int* points;
+
+  int num_lns;
+  int* lines;
+  
+  struct _iterator {
+    /* always keep pt1_idx < pt2_idx < pt3_idx */
+    int pt1_idx;
+    int pt2_idx;
+    int pt3_idx;
+  } iter;
+  
+};
+
+#+END_SRC
+
+** Contruct a graph object
+
+#+BEGIN_SRC c :tangle yes :tangle count_triangles_tangled.c
+void graph_construct(struct Graph* g,
+		     int num_pts, int* pts,
+		     int num_lns, int* lns)
+{
+  size_t sz;
+  assert(g);
+  
+  g->num_pts = num_pts;
+  g->points = NULL;
+  sz = (size_t)num_pts *  sizeof(int);
+  g->points = (int*)malloc(sz);
+  if (g->points) {
+    memcpy(g->points, pts, sz);
+  }
+
+  g->num_lns = num_lns;
+  g->lines = NULL;
+  sz = sizeof(int) * (size_t)g->num_lns * (size_t)(g->num_pts + 1);
+  g->lines = (int*)malloc(sz);
+  if (g->lines) {
+    memcpy(g->lines, lns, sz);
+  }
+
+  g->iter.pt1_idx = -1;
+  g->iter.pt2_idx = -1;
+  g->iter.pt3_idx = -1;
+}
+
+#+END_SRC
+
+** Destroy a graph object
+
+#+BEGIN_SRC c
+void graph_destroy(struct Graph* g)
+{
+  assert(g);
+
+  if (g->points)
+    free (g->points);
+
+  if (g->lines)
+    free (g->lines);
+
+  memset(g, 0, sizeof(*g));
+}
+
+#+END_SRC
+
+** Iterate all 3-points 
+
+*** Set iterator at begin
+
+#+BEGIN_SRC c  :tangle yes :tangle count_triangles_tangled.c
+void iterator_begin(struct Graph* g)
+{
+  assert(g);
+  
+  g->iter.pt1_idx = 0;
+  g->iter.pt2_idx = 1;
+  g->iter.pt3_idx = 2;
+}
+
+#+END_SRC
+
+*** Check iterator at end
+
+#+BEGIN_SRC c
+int iterator_end(struct Graph* g)
+{
+  assert(g);
+  
+  return (g->iter.pt1_idx >= (g->num_pts - 2))
+    &&   (g->iter.pt2_idx >= (g->num_pts - 1))
+    &&   (g->iter.pt3_idx >= g->num_pts);
+}
+
+#+END_SRC
+
+*** Iterates  next 3-points
+
+#+BEGIN_SRC c :tangle yes :tangle count_triangles_tangled.c
+void iterator_next(struct Graph* g, int* p1, int* p2, int* p3)
+{
+  *p1 = g->points[g->iter.pt1_idx];
+  *p2 = g->points[g->iter.pt2_idx];
+  *p3 = g->points[g->iter.pt3_idx];
+
+  g->iter.pt3_idx += 1;
+  if (g->iter.pt3_idx < g->num_pts) {
+    return;
+  }
+
+  g->iter.pt2_idx += 1;
+  if (g->iter.pt2_idx < (g->num_pts - 1)) {
+    g->iter.pt3_idx = g->iter.pt2_idx + 1;
+    return;
+  }
+
+  g->iter.pt1_idx += 1;
+  if (g->iter.pt1_idx < (g->num_pts - 2)) {
+    g->iter.pt2_idx = g->iter.pt1_idx + 1;
+    g->iter.pt3_idx = g->iter.pt2_idx + 1;
+    return;
+  }
+}
+
+#+END_SRC

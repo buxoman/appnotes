@@ -1,0 +1,23 @@
+# -*- mode:org;coding:utf-8 -*-
+#+TITLE: Convert PKCS#12 to JKS using keytool
+
+通过 keytool 密钥库导入命令 importkeystore， 将密钥库格式由 PKCS#12 转
+换为 JKS。
+
+: keytool -importkeystore -v -srckeystore src.pfx -srcstoretype pkcs12 \
+:         -srcstorepass 123456 -destkeystore dest.keystore -deststoretype jks \
+:         -deststorepass 123456
+
+此命令将源库 src.pfx 导入到名为 dest.keystore 的 JAVA 密钥库。
+
+参数说明如下：
+ + -importkeystore :: 导入密钥库，通过格式设定，我们可以将 PKCS#12 文
+      件转换为 JKS 格式。 
+ + -v :: 显示详情 
+ + -srckeystore ::  源密钥库
+ + -srcstoretype :: 源密钥库格式，这里为pkcs12 
+ + -srcstorepass :: 源密钥库密码，这里为123456 
+ + -destkeystore :: 目标密钥库                                         
+ + -deststoretype :: 目标密钥库格式，这里为jks，默认值也如此 
+ + -deststorepass :: 目标密钥库密码，这里为123456 
+

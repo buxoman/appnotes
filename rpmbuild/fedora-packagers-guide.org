@@ -1,0 +1,109 @@
+# -*- mode:org;coding:utf-8 -*-
+#+OPTIONS: h:3 toc:3 num:3 
+#+STARTUP: indent content inlineimages
+#+TITLE: Fedora Packages Guide
+
+* Packagers Guide
+
+** 1.2. Package Design
+ As a part of their design, RPM packages consist of the following three parts:
+
++ Metadata ::
+	      The metadata part defines the package itself, including
+              its name, version, license, a list of changes,
+              dependencies, and so on.
++ Files ::
+	   This part consists of an archive with files that are
+           installed by the package on the system.
++ Scripts ::
+	     This part contains scripts, which are run when the
+             package is installed, updated, or uninstalled.
+
+ Each of these three parts must be defined, provided, or included by the package in order to successfully build, install, or uninstall the package.
+
+*** 1.2.1. Package File Name
+
+Every package file is labeled with a highly identifiable name. This
+name has four parts, which typically look something like:
+
+:     kernel-smp-2.6.32.9-3.i686.rpm
+:     kernel-smp-2.6.32.9-3.x86_64.rpm
+:     rootfiles-7.2-1.noarch.rpm 
+
+Here, the four parts of each name are separated from each other by
+dashes or periods. The structure of the package file name is as
+follows:
+
+:     name-version-release.architecture.rpm 
+
+**** 1.2.1.1. Package Architecture
+
+ RPM supports various architectures. The following table presents some
+ of the architectures available for different platforms that are
+ supported by Fedora 18.
+
+#+CAPTION: Table 1.1. Package Architecture
+#+NAME: tbl:pkg-arch
+| Platform                | 	Architecture |
+|-------------------------+----------------------|
+| Intel x86 or compatible | 	i386, i686   |
+| AMD64 / Intel 64        | 	x86_64       |
+| Intel Itanium           | 	ia64         |
+| IBM POWER               | 	ppc64        |
+| IBM System z            | 	s390x, s390  |
+| No architecture         | 	noarch       |
+
+A platform-independent package, which is identified with *noarch* in the
+architecture part of the file name, provides programs that are not
+dependent on any platform. Programs written in Perl, Python, or other
+scripting languages often do not depend on code compiled for a
+particular architecture. In addition, compiled Java applications are
+usually free of platform dependencies, thus are also distributed in
+the form of platform-independent packages.
+
+**** 1.2.1.2. Source RPM
+
+ A source RPM package (SRPM) contain all the commands, usually in
+ scripts, necessary to recreate the binary RPM. Having a SRPM means
+ that you can recreate the binary RPM at any time. A SRPM has a file
+ name ending in .src.rpm, for example:
+
+:     mlocate-0.22.2-2.src.rpm 
+
+ The SRPM distributes a source code for the corresponding software that is ready to be installed on the system with the binary RPM. It also includes a spec file, which describes the software and the package, and contains instructions on how to perform the installation on the system. 
+
+*** 1.2.2. Format of the Archived Files
+
+  The archive with files, which are installed by the package, is stored
+  in the cpio format inside the package and is compressed with the xz
+  program.
+
+  To decompress the included archive and extract the archived files, run
+  the command in the following format:
+
+  : rpm2cpio package | cpio -id 
+
+  For example, to decompress the archive included in the eject-2.1.5-0.1.fc18.x86_64.rpm package, run the following command:
+
+  : rpm2cpio eject-2.1.5-0.1.fc18.x86_64.rpm | cpio -id 
+
+*** 1.2.3. Querying Packages
+The rpm allows you to query packages that are available on the system. This way, you can easily explore the basic structure of the packages.
+
+Some of the useful commands for querying the packages include:
+
++ *rpm -qd /package/ * ::
+     
+     rpm -qd package command is used to get a list of included
+     documentation files, which are defined by the *%doc* directive.
+
++ *rpm -qc /package/ * ::
+     
+     The rpm -qc package command is used to get a list of included
+     configuration files, which are defined by the *%config* directive.
+
++  *rpm -q --scripts /package/ * ::
+     
+     The rpm -q --scripts package command is used to get a list of
+     scripts, which are defined by the *%pre, %post, %preun*, and
+     *%postun* directives.
