@@ -1,0 +1,90 @@
+# -*- coding:utf-8 -*-
+#+TITLE: kolloa-ansible
+
+* 节点的类型及运行的服务
+
+基本的kolla清单（inventory）包含几种节点类型，在ansible中叫做组
+（group）。
+
+- *Control* : 控制节点，运行控制服务，例如API和数据库。这种类型的节点
+  数量必须是奇数， 以便实现quorum（仲裁）。
+- *Network* : 网络节点，运行Neutron agents/haproxy/keepalived。这些节
+  点有一个浮动IP，定义在 *kolla_internal_vip_address* 。
+- *Compute* : 计算节点，运行计算服务，用户的虚机就在这里运行。
+- *Storage* : 存储节点，运行cinder-volume/LVM/ceph-osd等。
+- *Monitoring* : 监控节点，运行监控服务。
+
+* 网络配置
+
+** 接口配置
+
+管理员应该配置下列接口： 
+ 
+1. *network_interface* - While it is not used on its own, this
+   provides the required default for other interfaces below. 此项配置
+   为下面其它接口提供缺省值。此外无它用。
+
+2. *api_interface* - This interface is used for the management
+   network. The management network is the network OpenStack services
+   uses to communicate to each other and the databases. There are
+   known security risks here, so it’s recommended to make this
+   network internal, not accessible from outside. Defaults to
+   network_interface. 此接口用于管理网。经由此网络，OpenStack服务和
+   数据库间相互通信。由于众所周知的安全风险，建议使用内部网络，外部不
+   可访问。缺省值是 =network_interface= 。
+
+3. *kolla_external_vip_interface* - This interface is public-facing
+   one. It’s used when you want HAProxy public endpoints to be
+   exposed in different network than internal ones. It is mandatory to
+   set this option when kolla_enable_tls_external is set to
+   yes. Defaults to network_interface. 此接口面向公共。当想把HAProxy公
+   共端点暴露在不同的网络，而不是内网，则使用此选项。若选项
+   *kolla_enable_tls_external* 设置成 yes，则此项必须设置。缺省值是
+   =network_interface= 。
+
+4. *storage_interface* - This is the interface that is used by virtual
+   machines to communicate to Ceph. This can be heavily utilized so
+   it’s recommended to put this network on 10Gig networking. Defaults
+   to network_interface. 此接口是用于虚机与Ceph通信的。该接口可能是被
+   重度使用的，因此建议使用10G 网络。缺省值是 =network_interface= 。
+
+5. *cluster_interface* - This is another interface used by Ceph. It’s
+   used for data replication. It can be heavily utilized also and if
+   it becomes a bottleneck it can affect data consistency and
+   performance of whole cluster. Defaults to network_interface. 此接口
+   也是被Ceph使用来做数据复制的。也是可能重度使用的接口，如果它成为瓶
+   颈，可能会影响数据一致性，以及整个集群的性能。缺省值是
+   =network_interface= 。
+
+6. *tunnel_interface* - This interface is used by Neutron for vm-to-vm
+   traffic over tunneled networks (like VxLan). Defaults to
+   network_interface. 此接口由Neutron使用，实现隧道网络（例如Vxlan）承
+   载vm-to-vm的流量。缺省值是 =network_interface= 。
+
+7. *neutron_external_interface* - This interface is required by
+   Neutron. Neutron will put br-ex on it. It will be used for flat
+   networking as well as tagged vlan networks. Has to be set
+   separately. 此接口是 Neutron 所必需的。Neutron 会把 br-ex 放在此接
+   口上。 可用于flat网络以及tagged vlan网络。必须单独设置。（注：不使
+   用network_interface做缺省值了。）
+
+8. *dns_interface* - This interface is required by Designate and
+   Bind9. Is used by public facing DNS requests and queries to bind9
+   and designate mDNS services. Defaults to network_interface. 此接口
+   是 Designate 和 Bind9 所必需的。面向公共网络的DNS请求和查询，以及
+   mDNS服务都要使用此接口。缺省值是 =network_interface= 。
+
+9. *bifrost_network_interface* - This interface is required by
+   Bifrost. Is used to provision bare metal cloud hosts, require L2
+   connectivity with the bare metal cloud hosts in order to provide
+   DHCP leases with PXE boot options. Defaults to
+   network_interface. 此接口是Bifrost所必需的。用于提供裸金属云主机，
+   要求主机之间二层网络连通，以便提供DHCP以及 PXE启动选项。缺省值是
+   =network_interface= 。
+
+注： 管理网络应该使用192.168的内网。 network_interface 应该明确指定成
+服务器上的管理网接口。
+
+neutron_external_interface该如何设置呢？与network_interface相同还是不
+同？tunnel_interface 应该设置成与之相同吗？
+
