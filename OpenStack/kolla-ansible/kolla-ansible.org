@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+#+STARTUP: contents indent
 #+TITLE: kolloa-ansible
 
 * 节点的类型及运行的服务
@@ -82,6 +83,12 @@
    network_interface. 此接口是Bifrost所必需的。用于提供裸金属云主机，
    要求主机之间二层网络连通，以便提供DHCP以及 PXE启动选项。缺省值是
    =network_interface= 。
+   #+BEGIN_QUOTE
+   警告： 
+
+   Ansible 不能识别接口名称中的短横线（-），例如 =br-ex= 或者 =bond-0=
+   ，因为Ansible会分别读成 =br_ex= 和 =bond_0= 。
+   #+END_QUOTE
 
 注： 管理网络应该使用192.168的内网。 network_interface 应该明确指定成
 服务器上的管理网接口。
@@ -89,4 +96,24 @@
 neutron_external_interface该如何设置呢？与network_interface相同还是不
 同？tunnel_interface 应该设置成与之相同吗？
 
+* Docker 配置
 
+Docker是kolla的核心依赖，因此合适的docker配置会提升kolla体验。下面列出
+了几个跟kolla相关的重要的配置细节。
+
+** Storage Driver
+
+有些操作系统把docker存储驱动默认设置为devicemapper。此种设置将严重降低
+构建和部署性能。我们建议使用 =btrfs= 或者 =aufs= 。
+
+** Volumes
+
+kolla把几乎所有的持久性数据都放在了docker volumes。这些卷（volume）位
+于docker的工作目录，缺省为： 
+: /var/lib/docker
+
+一定要确保这里有足够的硬盘空间。而且要使用快速的磁盘，确保构建和部署性
+能。
+
+特别是开启了 *enable_central_logging* 和 *openstack_logging_debug* 两
+个选项后，对于130个节点的集群来说，每天可能产生30G-50G的日志。
