@@ -18,6 +18,7 @@
 
 ** 接口配置
 
+
 管理员应该配置下列接口： 
  
 1. *network_interface* - While it is not used on its own, this
@@ -87,4 +88,5 @@
 
 neutron_external_interface该如何设置呢？与network_interface相同还是不
 同？tunnel_interface 应该设置成与之相同吗？
+
 
