@@ -1,0 +1,20 @@
+# -*- coding:utf-8 -*-
+#+TITLE: kolloa-ansible
+
+* 节点的类型及运行的服务
+
+基本的kolla清单（inventory）包含几种节点类型，在ansible中叫做组
+（group）。
+
+- *Control* : 控制节点，运行控制服务，例如API和数据库。这种类型的节点
+  数量必须是奇数， 以便实现quorum（仲裁）。
+- *Network* : 网络节点，运行Neutron agents/haproxy/keepalived。这些节
+  点有一个浮动IP，定义在 *kolla_internal_vip_address* 。
+- *Compute* : 计算节点，运行计算服务，用户的虚机就在这里运行。
+- *Storage* : 存储节点，运行cinder-volume/LVM/ceph-osd等。
+- *Monitoring* : 监控节点，运行监控服务。
+
+* 网络配置
+
+** 接口配置
+
