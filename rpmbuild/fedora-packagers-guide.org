@@ -9,17 +9,20 @@
  As a part of their design, RPM packages consist of the following three parts:
 
 + Metadata ::
-	      The metadata part defines the package itself, including
-              its name, version, license, a list of changes,
-              dependencies, and so on.
+             The metadata part defines the package itself, including
+             its name, version, license, a list of changes,
+             dependencies, and so on.
 + Files ::
-	   This part consists of an archive with files that are
-           installed by the package on the system.
-+ Scripts ::
-	     This part contains scripts, which are run when the
-             package is installed, updated, or uninstalled.
+          This part consists of an archive with files that are
+          installed by the package on the system.
 
- Each of these three parts must be defined, provided, or included by the package in order to successfully build, install, or uninstall the package.
++ Scripts ::
+            This part contains scripts, which are run when the
+            package is installed, updated, or uninstalled.
+            
+            Each of these three parts must be defined, provided, or
+            included by the package in order to successfully build,
+            install, or uninstall the package.
 
 *** 1.2.1. Package File Name
 

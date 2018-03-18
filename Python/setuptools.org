@@ -467,7 +467,8 @@ setuptools是Python distutils增强版的集合，它可以帮助我们更简单
         299                     5 files
 #+END_EXAMPLE
 
-我们可以看到，里面是一系列自动生成的文件。现在可以介绍一下刚刚setup()中的参数了
+我们可以看到，里面是一系列自动生成的文件。现在可以介绍一下刚刚setup()
+中的参数了
 
 -    name 包名
 -    version 版本号
@@ -581,7 +582,7 @@ setup()的其他参数，我们可以学习一下
       package_dir = {'':'src'},   # 告诉distutils包都在src下
 
       package_data = {
-          # 任何包中含有.txt文件，都包含它
+          # 任何包中的.txt文件，都包含进来
           '': ['*.txt'],
           # 包含demo包data文件夹中的 *.dat文件
           'demo': ['data/*.dat'],
@@ -614,7 +615,7 @@ setup()的其他参数，我们可以学习一下
 
 *** 使用entry_points
 
-一个字典，从entry point组名映射道一个表示entry point的字符串或字符串列
+一个字典，从entry point组名映射到一个表示entry point的字符串或字符串列
 表。Entry points是用来支持动态发现服务和插件的，也用来支持自动生成脚本。
 这个还是看例子比较好理解：
 
@@ -630,8 +631,9 @@ setup()的其他参数，我们可以学习一下
           ]
       }
   )
-
 #+END_SRC
+注：console_scripts 设置的 foo/bar 将会自动生成可执行的脚本，名称就是
+foo 和 bar。这两个脚本实际上会去调用demo包的test函数。
 
 修改setup.py增加以上内容以后，再次安装这个egg，可以发现在安装信息里头多了两行代码（Linux下）：
 
